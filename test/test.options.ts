@@ -99,17 +99,19 @@ describe('Options', () => {
   });
 
   it('should use the same per-API setting twice', async () => {
-    const google = new GoogleApis();
-    google.options({auth: 'apikey1'});
-    const drive = google.drive({version: 'v2', auth: 'apikey2'});
     const scope = nock(Utils.baseUrl)
-      .get('/drive/v2/files/woot?key=apikey3')
+      .get('/gmail/v1/users/me/labels')
       .twice()
       .reply(200);
-    for (let i = 0; i < 2; i++) {
-      const res = await drive.files.get({auth: 'apikey3', fileId: 'woot'});
-      assert.strictEqual(Utils.getQs(res), 'key=apikey3');
-    }
+    const google = new GoogleApis();
+    const gmail = google.gmail({
+      version: 'v1',
+      params: {
+        userId: 'me',
+      },
+    });
+    await gmail.users.labels.list();
+    await gmail.users.labels.list();
     scope.done();
   });
 
